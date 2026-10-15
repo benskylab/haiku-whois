@@ -17,25 +17,7 @@ by Marco d'Itri — packaged as an installable Haiku `.hpkg` for **x86_64**.
 
 ---
 
-## 1. What this is, and how this tool was chosen
-
-The project ports classic Linux/BSD CLI tools to Haiku, one folder per tool
-(see `../rsync`). Candidates are checked against the OS and the package
-repositories before porting — several plausible ones turned out to exist:
-
-| Candidate | Outcome |
-|---|---|
-| `ss` | Not needed — **Haiku ships a native `netstat`** (`src/bin/network/netstat`, fed by the private syscall `_kern_get_next_socket_stat()`) |
-| `nslookup`, `dig` | Already packaged as **`bind_utils` 9.16.50-2** in official HaikuPorts. HaikuDepot's search never shows it for "dig"/"nslookup" because the depot matches package *name/description* only — the package is called `bind_utils` ("…DNS troubleshooting"). Search "dns", or `pkgman search dig` (matches the `cmd:dig` resolvable) |
-| `socat`, `whois`, `ngrep`, `iftop`, `bmon`, `net-snmp`, `lsof` | Genuinely missing → **whois picked** (lsof infeasible: no `/proc`, no fd-enumeration API) |
-
-### whois vs BSD whois — source comparison
-| | Debian `rfc1036/whois` (chosen) | FreeBSD `usr.bin/whois` |
-|---|---|---|
-| Code | whois.c 42 KB + utils.c, plain GNU Makefile | single 15 KB file, no build system |
-| Dependencies | libc only (libidn2/iconv/crypt auto-off) | libc; err.h/sysexits.h checks |
-| Features | IANA→TLD→RIR→registrar referral chain, `whois.conf`, charset recoding | basic server guessing |
-| License / activity | GPL-2.0-or-later, active (5.6.6, Feb 2026) | BSD, tracks FreeBSD |
+## 1. What this is
 
 Debian's whois is *the* Linux `whois`, builds essentially unmodified on
 Haiku, and its referral logic was verified working end-to-end.
