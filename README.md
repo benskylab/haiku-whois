@@ -68,8 +68,9 @@ functions.
 +whois_LDADD += -lnetwork
 ```
 
-Same class of fix as the rsync port (`socket`, `connect`, `gethostbyname`,
-`getservbyname` … are in `libnetwork.so`).
+On Haiku the socket API (`socket`, `connect`, `gethostbyname`,
+`getservbyname` …) lives in `libnetwork.so` rather than `libroot.so`, so any
+program touching it needs the explicit link.
 
 ### 3.3 Man-page relocation (build script + recipe, not a source patch)
 
@@ -79,12 +80,6 @@ in `share/man` are invisible (`man whois` → "No entry"). Both the hand script
 and the recipe therefore re-root the pages after installation. Haiku's system
 dirs are read-only packagefs mounts, so packages are the only way pages get
 there — which is why the relocation matters.
-
-> Note: this affected the rsync port too — its hand-built package shipped
-> `share/man` pages, so `man rsync` failed. (Its recipe path was always
-> correct: `runConfigure` passes `--mandir=$manDir` automatically.) Fixed
-> 2026-10-14: rsync's hand script now re-roots the pages the same way and
-> its package was rebuilt.
 
 ---
 
@@ -104,7 +99,7 @@ there — which is why the relocation matters.
 
 ## 5. Build process
 
-### Hand-scripted (proves the goal, like rsync's `build_haiku_rsync.sh`)
+### Hand-scripted
 
 ```sh
 # on the VM, source dir holds the tarball + patchset:
@@ -161,8 +156,7 @@ requires {
 ```
 
 - The only real dependency is `haiku` itself (libroot + libnetwork).
-- `package create` accepted `"GNU GPL v2"` as a recognized license identifier
-  (the rsync port needed `"GNU GPL v3"` — same rule, v2 variant works).
+- `package create` accepted `"GNU GPL v2"` as a recognized license identifier.
 - Package file paths are relative to `/boot/system`.
 
 ---
@@ -253,7 +247,7 @@ whois/
 ## 11. Scope notes
 
 - **x86_64 only** — recipe declares `ARCHITECTURES="all !x86_gcc2"` but no
-  `SECONDARY_ARCHITECTURES` (unlike rsync); only x86_64 was built/tested.
+  `SECONDARY_ARCHITECTURES`; only x86_64 was built/tested.
 - `mkpasswd`, iconv recoding, and NLS are out of scope (see §4).
 
 ---
