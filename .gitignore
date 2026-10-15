@@ -1,6 +1,9 @@
 # Agent working notes — local only, not published
 AGENTS.md
 
+# Submission status / planning — local only, not published
+SUBMISSION.md
+
 # Upstream source tarball — re-downloadable, keep only the patchset
 src/*.tar.*
 
