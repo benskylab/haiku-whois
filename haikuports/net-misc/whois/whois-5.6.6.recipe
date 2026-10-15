@@ -1,0 +1,74 @@
+SUMMARY="Intelligent WHOIS client"
+DESCRIPTION="whois is a RFC 3912 WHOIS protocol client that intelligently \
+selects the appropriate WHOIS server for most queries: it starts at \
+whois.iana.org and follows TLD, registry and registrar referrals until it \
+reaches the authoritative server. This port is compiled natively for Haiku, \
+with support for a local server-override file (whois.conf(5)) and long \
+options."
+HOMEPAGE="https://github.com/rfc1036/whois"
+COPYRIGHT="1996-2026 Marco d'Itri and contributors"
+LICENSE="GNU GPL v2"
+REVISION="1"
+
+# Native (3.0) upstream release tarball as published by the maintainer to the
+# Debian pool; checksum cross-checked against the PGP-signed whois_5.6.6.dsc.
+SOURCE_URI="https://deb.debian.org/debian/pool/main/w/whois/whois_$portVersion.tar.xz"
+CHECKSUM_SHA256="121a3b0467ad64a0e7034b44e71bd1cf28a2e4cca82886d40804ce1fac6494c0"
+SOURCE_DIR="work"
+
+PATCHES="whois-$portVersion.patchset"
+
+ARCHITECTURES="all !x86_gcc2"
+
+# Optional local WHOIS-server overrides, see whois.conf(5). Upstream handles a
+# missing file gracefully (ENOENT -> fall back to server guessing).
+configFile="/boot/system/settings/network/whois.conf"
+
+PROVIDES="
+	whois = $portVersion compat >= 1
+	cmd:whois = $portVersion
+	"
+REQUIRES="
+	haiku >= r1~beta5
+	"
+
+BUILD_REQUIRES="
+	haiku_devel
+	"
+BUILD_PREREQUIRES="
+	cmd:gcc
+	cmd:ld
+	cmd:make
+	cmd:perl
+	cmd:pkg_config
+	"
+
+defineDebugInfoPackage whois $binDir/whois
+
+BUILD()
+{
+	# Plain GNU makefile, not autotools. The patchset adds the Haiku
+	# feature macros (config.h) and the -lnetwork socket linkage
+	# (Makefile), so no extra flags are needed here.
+	make whois CONFIG_FILE="$configFile"
+}
+
+INSTALL()
+{
+	make install-whois prefix=$prefix DESTDIR=$destDir \
+		CONFIG_FILE="$configFile"
+
+	# Haiku's man(1) (mandoc) reads $documentation/man, not share/man:
+	# relocate the pages there and drop the upstream share/man tree.
+	mkdir -p $destDir$manDir/man1 $destDir$manDir/man5
+	cp $destDir$prefix/share/man/man1/whois.1 $destDir$manDir/man1/
+	cp $destDir$prefix/share/man/man5/whois.conf.5 $destDir$manDir/man5/
+	rm -rf $destDir$prefix/share
+}
+
+TEST()
+{
+	# Offline sanity: both commands exit 0 without network access.
+	./whois --version | grep -q "Version $portVersion"
+	./whois --help | grep -q -- "--host"
+}

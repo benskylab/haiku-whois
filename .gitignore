@@ -1,0 +1,10 @@
+# Agent working notes — local only, not published
+AGENTS.md
+
+# Upstream source tarball — re-downloadable, keep only the patchset
+src/*.tar.*
+
+# Editor / OS noise
+*.swp
+*~
+.DS_Store

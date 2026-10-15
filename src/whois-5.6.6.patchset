@@ -1,0 +1,45 @@
+From 84db31541bf90885f82b73f87dade1c730f0b241 Mon Sep 17 00:00:00 2001
+From: Haiku port <haiku@example.invalid>
+Date: Wed, 14 Oct 2026 16:33:50 +0200
+Subject: [PATCH] Haiku platform support for whois 5.6.6
+
+Defines HAVE_GETOPT_LONG / HAVE_GETADDRINFO / HAVE_REGEXEC for the Haiku libc (config.h has no __HAIKU__ case; without them long options silently break) and links the socket API from libnetwork (Makefile), the same linkage fix the rsync port needed.
+---
+ Makefile | 3 +++
+ config.h | 6 ++++++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index f258701..74a793e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -30,6 +30,9 @@ mkpasswd_OBJECTS := mkpasswd.o utils.o
+ # OS X
+ #whois_LDADD += -liconv
+ 
++# Haiku: the socket API lives in libnetwork, not libroot
++whois_LDADD += -lnetwork
++
+ ifdef CONFIG_FILE
+ DEFS += -DCONFIG_FILE=\"$(CONFIG_FILE)\"
+ endif
+diff --git a/config.h b/config.h
+index 790b27f..e589684 100644
+--- a/config.h
++++ b/config.h
+@@ -33,6 +33,12 @@
+ # endif
+ #endif
+ 
++#ifdef __HAIKU__
++# define HAVE_GETOPT_LONG
++# define HAVE_GETADDRINFO
++# define HAVE_REGEXEC
++#endif
++
+ #if defined OpenBSD
+ # define HAVE_READPASSPHRASE
+ #endif
+-- 
+2.34.1
+
